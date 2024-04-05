@@ -71,7 +71,8 @@ def send_to_datacite():
         save_response(response)
         json_data = json.loads(response.text)
         if 'report' in json_data:
-            config.Config().write_id(json_data['report']['id'])
+            my_id = json_data['report']['id']
+            config.Config().write_id(my_id)
     else:
         my_url = urljoin(config.Config().hub_base_url, f'reports/{pathname2url(my_id)}')
         # response = requests.put(my_url, data=data.encode("utf-8"), headers=headers)
@@ -83,4 +84,15 @@ def send_to_datacite():
         print("Expected to get 200 range status code when sending the report to the hub. Check tmp/datacite_response_body.txt for response.")
         sys.exit(1)
     else:
-        print('submitted')
+        print(f'Submitted ID: {my_id}')
+
+def delete_from_datacite(id):
+    headers = {
+        'Authorization': f'Bearer {config.Config().hub_api_token}'
+    }
+    my_url = urljoin(config.Config().hub_base_url, f'reports/{pathname2url(id)}')
+    response = retry_if_500(method='delete', url=my_url, data='', headers=headers)
+    if response.status_code < 200 or response.status_code > 299:
+        print(f'Delete ID: {id}. Expected to get 204, but got code {response.status_code}')
+    else:
+        print(f'Deleted ID: {id}')

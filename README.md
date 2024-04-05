@@ -19,7 +19,7 @@ python installed, you can use `pip` and `python` as shown in the examples.
 
 The software assumes you area already logging your COUNTER dataset *investigations* and *requests* to a log file using a format somewhat similar to extended log format.  The COUNTER Code of Practice requires that descriptive metadata be submitted along with statistics--these items are included in logs to ease later processing.
 
-Log items are separated by tabs (\t) and any missing values may be logged with a dash (-) or by a an empty string.
+Log items are separated by tabs (\t) and any missing values may be logged with a dash (-) or by an empty string.
 
 ## Go through an example of installing and running the script
 
@@ -44,7 +44,7 @@ with some examples.
 - Publication Date (ISO8601 format)
 - Version
 - Other/Alternate ID
-- Target URL that the itentifer such as the DOi would resolve to
+- Target URL that the identifier such as the DOi would resolve to
 - Year of Publication
 
 ## Overview of processing logs
@@ -98,6 +98,7 @@ If you don't set a CONFIG_FILE the script will use the one at *config/config.yam
 - **simulate_date**: put in a yyyy-mm-dd date to simulate running a report on that specified year month and day.  Normally the script will process logs and create data output through the previous day based on the system time.  A report run for a month after a reporting period is over will process things up to the end of that reporting month as specified by year_month.  Setting this allows simulating a run on a different day and is mostly for testing.  See information about how state is maintained in the section below to understand what happens when specifying a different date.  The processor expects an orderly processing of logs in chronological order such as running nightly or weekly.
 - **maxmind\_geoip\_country\_path**: set the path to the GeoLite2-Country.mmdb binary geolocation database file.  You may need to periodically download updates to this file from MaxMind.
 - **output\_volume**: set to True if you'd like volume (file size) information output in the report.  This option is currently not supported when submitting reports to the hub.
+- **clean\_for\_rerun**: set to True to force the deletion of existing data. This option should not be included in the config file but can be passed in when re-running an already processed set of logs files.
 
 ## Maintaining State Between Runs
 
@@ -113,7 +114,7 @@ There is also an id key for each month which indicates the identifier returned b
 
 The state allows data to be added to the database from the logs, for example each night, without reprocessing every log for the month every night.
 
-For example, if the script is run on May 2nd, and for a May 2018 report, it woould process the log file for May 1st and put entries in the 2018-05 database for that log file (from which stats can be calculated).
+For example, if the script is run on May 2nd, and for a May 2018 report, it would process the log file for May 1st and put entries in the 2018-05 database for that log file (from which stats can be calculated).
 
 If run again on May 3rd, it would only need to process the May 2nd log into the database because May 1st has already been processed.
 
@@ -129,6 +130,10 @@ If you wish to completely reprocess and submit a month's data from log files you
 2. Remove the state data from the json file for a particular year-month.
 3. Remove the appropriate month's sqlite database from the file system
 4. Reprocess the month.  If it's after the month, use *year_month* for the months report you'd like.
+
+These 4 steps can be automatically done by passing *clean_for_rerun=True*.  Note: If a report id exists in the state file the DELETE request will be called regardless of the *upload_to_hub* flag
+
+```CLEAN_FOR_RERUN=True ./main.py```
 
 It might also be important to understand how state works if moving the script to a different system so that you maintain the state files as needed.
 
