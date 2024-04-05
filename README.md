@@ -131,8 +131,7 @@ If you wish to completely reprocess and submit a month's data from log files you
 3. Remove the appropriate month's sqlite database from the file system
 4. Reprocess the month.  If it's after the month, use *year_month* for the months report you'd like.
 
-These 4 steps can be automatically done by passing *clean_for_rerun=True*
-Note: If a report id exists in the state file the DELETE request will be called regardless of the *upload_to_hub* flag
+These 4 steps can be automatically done by passing *clean_for_rerun=True*.  Note: If a report id exists in the state file the DELETE request will be called regardless of the *upload_to_hub* flag
 
 ```CLEAN_FOR_RERUN=True ./main.py```
 
