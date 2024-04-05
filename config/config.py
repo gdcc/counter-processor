@@ -1,6 +1,7 @@
 import yaml
 import os
 from models import *
+from upload import upload
 import logging
 import input_processor as ip
 import output_processor as op
@@ -246,6 +247,8 @@ class _Config:
     def delete_log_processed_date(self):
         # clean up data for this period, so it can be re-run
         if self.year_month in self.state_dict:
+            if 'id' in self.state_dict[self.year_month]:
+              upload.delete_from_datacite(self.state_dict[self.year_month]['id'])
             self.log.info(f"Removing state: {self.year_month}")
             # remove the info from the state json
             self.state_dict.pop(self.year_month)
