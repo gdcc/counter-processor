@@ -1,6 +1,7 @@
 import yaml
 import os
 from models import *
+import logging
 import input_processor as ip
 import output_processor as op
 import sys
@@ -19,11 +20,12 @@ class _Config:
 
     ALLOWED_ENV = ('LOG_NAME_PATTERN', 'ROBOTS_URL', 'MACHINES_URL', 'YEAR_MONTH',
         'OUTPUT_FILE', 'PLATFORM', 'HUB_API_TOKEN', 'HUB_BASE_URL', 'UPLOAD_TO_HUB',
-        'SIMULATE_DATE', 'MAXMIND_GEOIP_COUNTRY_PATH', 'OUTPUT_VOLUME')
+        'SIMULATE_DATE', 'MAXMIND_GEOIP_COUNTRY_PATH', 'OUTPUT_VOLUME', 'CLEAN_FOR_RERUN')
 
+    logging.basicConfig(format='%(message)s', level=logging.INFO)
     # thismodule = sys.modules[__name__]  # not sure this is needed
-
     def __init__(self):
+        self.log = logging.getLogger(__name__)
         # things that come from the configuration file
         self.robots_reg = None
         self.machines_reg = None
@@ -40,6 +42,7 @@ class _Config:
         self.simulate_date = None
         self.maxmind_geoip_country_path = None
         self.output_volume = None
+        self.clean_for_rerun = None
 
         # things that are stored or calculated separately
         self.start_date = None
@@ -72,7 +75,7 @@ class _Config:
         secret = os.path.join(os.path.dirname(self.config_file), 'secrets.yaml')
         if os.path.isfile(secret) == True:
             with open(secret, 'r') as ymlfile:
-                cfg = yaml.load(ymlfile)
+                cfg = yaml.safe_load(ymlfile)
                 for x in cfg:
                     setattr(self, x, cfg[x])
 
@@ -88,6 +91,8 @@ class _Config:
         if isinstance(self.output_volume, str):
             self.output_volume = (self.output_volume.lower() == 'true')
 
+        if isinstance(self.clean_for_rerun, str):
+            self.clean_for_rerun = (self.clean_for_rerun.lower() == 'true')
 
         # simulate date, in case someone wants to simulate running on a day besides now
         if self.simulate_date is not None:
@@ -237,6 +242,20 @@ class _Config:
 
         return [ self.log_name_pattern.replace('(yyyy-mm-dd)', self.year_month + '-' + ("%02d" % x))
             for x in range(to_process_from, ld + 1) ]
+
+    def delete_log_processed_date(self):
+        # clean up data for this period, so it can be re-run
+        if self.year_month in self.state_dict:
+            self.log.info(f"Removing state: {self.year_month}")
+            # remove the info from the state json
+            self.state_dict.pop(self.year_month)
+            # delete the specific database for this time period
+            my_file = f'state/counter_db_{self.year_month}.sqlite3'
+            if os.path.exists(my_file):
+                self.log.info(f"Deleting file: {my_file}")
+                os.remove(my_file)
+            with open('state/statefile.json', 'w') as f:
+                json.dump(self.state_dict, f, sort_keys = True, indent = 4, ensure_ascii=False)
 
     def update_log_processed_date(self):
         if self.year_month in self.state_dict:

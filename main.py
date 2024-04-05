@@ -16,6 +16,10 @@ def main():
     else:
         DbActions.vacuum() # cleans up DB indices for speed
 
+    # if re-running a particular month then remove the db and entry in the state file
+    if config.Config().clean_for_rerun == True:
+        config.Config().delete_log_processed_date()
+
     the_filenames = config.Config().filenames_to_process()
 
 
