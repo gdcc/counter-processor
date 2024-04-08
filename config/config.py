@@ -247,11 +247,10 @@ class _Config:
     def delete_log_processed_date(self):
         # clean up data for this period, so it can be re-run
         if self.year_month in self.state_dict:
-            if 'id' in self.state_dict[self.year_month]:
-              upload.delete_from_datacite(self.state_dict[self.year_month]['id'])
             self.log.info(f"Removing state: {self.year_month}")
             # remove the info from the state json
-            self.state_dict.pop(self.year_month)
+            if 'last_processed_day' in self.state_dict[self.year_month]:
+              self.state_dict[self.year_month].pop('last_processed_day')
             # delete the specific database for this time period
             my_file = f'state/counter_db_{self.year_month}.sqlite3'
             if os.path.exists(my_file):

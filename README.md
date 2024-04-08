@@ -126,12 +126,9 @@ It might be important to understand how this works if there is an unusual situat
 
 If you wish to completely reprocess and submit a month's data from log files you can:
 
-1. Manually send a DELETE request to the hub for an id to remove a report.
-2. Remove the state data from the json file for a particular year-month.
-3. Remove the appropriate month's sqlite database from the file system
-4. Reprocess the month.  If it's after the month, use *year_month* for the months report you'd like.
-
-These 4 steps can be automatically done by passing *clean_for_rerun=True*.  Note: If a report id exists in the state file the DELETE request will be called regardless of the *upload_to_hub* flag
+1. Set *clean_for_rerun=True* in the config file
+2. Or, by passing *clean_for_rerun=True* when calling main.py
+3. Reprocess the month.  If it's after the month, use *year_month* for the months report you'd like.
 
 ```CLEAN_FOR_RERUN=True ./main.py```
 
