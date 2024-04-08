@@ -25,6 +25,7 @@ def save_response(response):
 
 # this method is a retry since the datacite api randomly gives many 500 errors
 def retry_if_500(method, url, data, headers):
+    print(f'Uploading  {method} {url} ...')
     for attempt in range(60):
         response = getattr(requests, method)(url, data=gzip.compress(data.encode()), headers=headers)
         if response.status_code < 500 or attempt == 59:
@@ -85,14 +86,3 @@ def send_to_datacite():
         sys.exit(1)
     else:
         print(f'Submitted ID: {my_id}')
-
-def delete_from_datacite(id):
-    headers = {
-        'Authorization': f'Bearer {config.Config().hub_api_token}'
-    }
-    my_url = urljoin(config.Config().hub_base_url, f'reports/{pathname2url(id)}')
-    response = retry_if_500(method='delete', url=my_url, data='', headers=headers)
-    if response.status_code < 200 or response.status_code > 299:
-        print(f'Delete ID: {id}. Expected to get 204, but got code {response.status_code}')
-    else:
-        print(f'Deleted ID: {id}')
