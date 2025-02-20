@@ -3,7 +3,7 @@
 ## Get the code
 
 <pre>
-git clone https://github.com/CDLUC3/counter-processor.git
+git clone https://github.com/IQSS/counter-processor.git
 cd counter-processor
 git checkout <em>branch-or-tag</em>
 </pre>
@@ -118,7 +118,7 @@ YEAR_MONTH=2018-05 ./main.py
 YEAR_MONTH=2014-01 LOG_NAME_PATTERN="/path/to/my/log/counter_2014-01.log" ./main.py
 </pre>
 
-### Process January 2014 from two seperate log files for the first and last halves of month
+### Process January 2014 from two separate log files for the first and last halves of month
 <pre>
 # I want to process from logs divided into January 1-15th and January 16-31
 
