@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import config
 from models import *
 import input_processor as ip
@@ -19,6 +19,7 @@ def main():
     # if re-running a particular month then remove the db and entry in the state file
     if config.Config().clean_for_rerun == True:
         config.Config().delete_log_processed_date()
+        DbActions.create_db()
 
     the_filenames = config.Config().filenames_to_process()
 
@@ -30,14 +31,19 @@ def main():
     print(f'Last processed date: {config.Config().last_processed_on()}')
 
     for lf in the_filenames:
+        day = config.Config().get_day_from_filename(lf)
         with open(lf) as infile:
             print(f'{datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}  importing {lf}')
+            lc = 0
             for line in infile:
                 ll = ip.LogLine(line)
                 ll.populate()
-
-    config.Config().update_log_processed_date()
-    config.Config().copy_db_to_disk()
+                lc = lc + 1
+                if lc % 100 == 0:
+                    print(f'lines imported {lc}')
+            print(f'lines imported {lc}')
+        config.Config().update_log_processed_date(day)
+        config.Config().copy_db_to_disk()
 
     print('')
     DbActions.vacuum() # cleanup indices, etc, maybe makes queries faster

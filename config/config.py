@@ -56,6 +56,7 @@ class _Config:
         self.dsr_release = None
         self.processing_database = None
         self._memory_database = None
+        self.last_processed_date = None
 
         # --- main setup and reading of all the config information ---
         self.state_dict = _Config.read_state()
@@ -155,7 +156,7 @@ class _Config:
     def end_time(self):
         return datetime.datetime.combine(self.end_date, datetime.datetime.min.time()) + datetime.timedelta(days=1)
 
-    # memoization of last day
+    # memorization of last day
     def last_day(self):
         """The last day available in the period, either yesterday if in same month, or else last day of month if it has passed"""
         if self.last_p_day is not None:
@@ -169,7 +170,7 @@ class _Config:
     def month_complete(self):
         return (self.run_date > self.end_time())
 
-    # gets/memoizes the robots regexp
+    # gets/memorizes the robots regexp
     def robots_regexp(self):
         """Get the list of robots/crawlers from a list that is one per line
         from the URL and make a regular expression for the detection"""
@@ -177,13 +178,13 @@ class _Config:
             return self.robots_reg
         resp = requests.get(self.robots_url)
         if resp.status_code != 200:
-            raise exceptions.ApiError(f'GET {url} failed.')
+            raise exceptions.ApiError(f'GET {self.robots_url} failed.')
         lines = resp.text.splitlines()
         lines = [s for s in lines if not s.startswith('#')]
         self.robots_reg = re.compile('|'.join(lines))
         return self.robots_reg
 
-    # gets/memoizes the machines regexp
+    # gets/memorizes the machines regexp
     def machines_regexp(self):
         """Get the list of machines from a list that is one per line
         from the URL and make a regular expression for the detection"""
@@ -191,13 +192,13 @@ class _Config:
             return self.machines_reg
         resp = requests.get(self.machines_url)
         if resp.status_code != 200:
-            raise exceptions.ApiError(f'GET {url} failed.')
+            raise exceptions.ApiError(f'GET {self.machines_url} failed.')
         lines = resp.text.splitlines()
         lines = [s for s in lines if not s.startswith('#')]
         self.machines_reg = re.compile('|'.join(lines))
         return self.machines_reg
 
-    # gets/memoizes the hit-type regexp
+    # gets/memorizes the hit-type regexp
     def hit_type_regexp(self):
         """Make hit type regular expressions for investigation vs request"""
         if self.hit_type_reg is not None:
@@ -238,6 +239,7 @@ class _Config:
             to_process_from = 1
 
         to_process_from_str = self.year_month + '-' + ("%02d" % to_process_from)
+        print(f'To process from: {to_process_from_str}')
         if to_process_from > ld:
             return []
 
@@ -259,13 +261,16 @@ class _Config:
             with open('state/statefile.json', 'w') as f:
                 json.dump(self.state_dict, f, sort_keys = True, indent = 4, ensure_ascii=False)
 
-    def update_log_processed_date(self):
+    def update_log_processed_date(self, day):
         if self.year_month in self.state_dict:
-            self.state_dict[self.year_month]['last_processed_day'] = int(self.last_day().split('-')[2])
+            self.state_dict[self.year_month]['last_processed_day'] = day
         else:
-            self.state_dict[self.year_month] = {'last_processed_day': int(self.last_day().split('-')[2])}
+            self.state_dict[self.year_month] = {'last_processed_day': day}
         with open('state/statefile.json', 'w') as f:
             json.dump(self.state_dict, f, sort_keys = True, indent = 4, ensure_ascii=False)
+
+    def get_day_from_filename(self, filename):
+        return int(re.split('(\d{4}-\d{2}-\d{2})', filename, 1)[1].split("-")[2])
 
     def current_id(self):
         if 'id' in self.state_dict[self.year_month]:

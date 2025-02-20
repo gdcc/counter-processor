@@ -4,28 +4,37 @@ log_name_pattern: log/counter_(yyyy-mm-dd).log
 
 # path_types regular expressions allow matching to classify page urls as either an investigation or request
 # based on specific URL structure for your system.
+# Dataverse Note: the url matches on this does not include the query params, so dataset.xhtml\S+ will not match
 path_types:
   investigations:
-    - ^/api/datasets/[^\/]+$
-    - ^/api/versions/\d+$
-    - ^/stash/dataset/\S+$
-    - ^/stash/data_paper/\S+$
-    - ^/resource/doi:[^/]+/dryad[^/]+$
+    - ^.*/dataset.xhtml\S*$
+    - ^.*/file.xhtml\S*$
+    - ^.*/api/datasets\S*$
+    - ^.*/api/v1/datasets\S*$
+    ## Below historic regex for testing
+    #- ^/api/datasets/[^\/]+$
+    #- ^/api/versions/\d+$
+    #- ^/stash/dataset/\S+$
+    #- ^/stash/data_paper/\S+$
   requests:
-    - ^/api/datasets/[^\/]+/download$
-    - ^/api/versions/\d+/download$
-    - ^/api/downloads/\d+$
-    - ^/stash/downloads/download_resource/\d+$
-    - ^/stash/downloads/file_download/\d+$
-    - ^/stash/downloads/file_stream/\d+$
-    - ^/stash/downloads/async_request/\d+$
-    - ^/stash/share/\S+$
-    - ^/resource/doi:[^/]+/dryad[^/]+/.+$
+    - ^.*/api/access/datafile\S+$
+    - ^.*/api/v1/access/datafile\S+$
+    ## Below historic regex for testing
+    #- ^/api/datasets/[^\/]+/download$
+    #- ^/api/versions/\d+/download$
+    #- ^/api/downloads/\d+$
+    #- ^/stash/downloads/download_resource/\d+$
+    #- ^/stash/downloads/file_download/\d+$
+    #- ^/stash/downloads/file_stream/\d+$
+    #- ^/stash/downloads/async_request/\d+$
+    #- ^/stash/share/\S+$
 
 # Robots and machines urls are urls where the script can download a list of regular expressions to determine
 # if something is a robot or machine user-agent.  The text file has one regular expression per line
-robots_url: https://raw.githubusercontent.com/CDLUC3/Make-Data-Count/master/user-agents/lists/robot.txt
-machines_url: https://raw.githubusercontent.com/CDLUC3/Make-Data-Count/master/user-agents/lists/machine.txt
+#robots_url: https://raw.githubusercontent.com/CDLUC3/Make-Data-Count/master/user-agents/lists/robot.txt
+#machines_url: https://raw.githubusercontent.com/CDLUC3/Make-Data-Count/master/user-agents/lists/machine.txt
+robots_url: https://raw.githubusercontent.com/IQSS/counter-processor/refs/heads/goto-gdcc/user-agents/lists/robots.txt
+machines_url: https://raw.githubusercontent.com/IQSS/counter-processor/refs/heads/goto-gdcc/user-agents/lists/machine.txt
 
 # the year and month for the report you are creating.
 year_month: 2018-04
@@ -47,8 +56,9 @@ platform: Dryad
 # yaml key/values set in secrets.yaml will override one from the main config.
 hub_api_token: set_me_in_secrets
 # the test metrics is only for testing
-# hub_base_url: https://metrics.test.datacite.org
+#hub_base_url: https://api.test.datacite.org
 hub_base_url: https://api.datacite.org
+# FIXME: Change "upload_to_hub" to True when you're ready.
 upload_to_hub: False
 
 # only use this to simulate running on a date besides today

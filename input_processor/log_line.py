@@ -17,12 +17,14 @@ class LogLine():
     COLUMNS = ('event_time', 'client_ip', 'session_cookie_id', 'user_cookie_id', 'user_id', 'request_url', 'identifier',
         'filename', 'size', 'user_agent', 'title', 'publisher', 'publisher_id', 'authors', 'publication_date', 'version',
         'other_id', 'target_url', 'publication_year')
+    # required columns that can NOT be empty
+    REQUIRED = ('event_time', 'identifier')
 
     def __init__(self, line):
         self.badline = False
         line = line.strip()
         if line.startswith('#'):
-            self.event_time = None
+            self.badline = True
             return
         split_line = line.split("\t")
 
@@ -36,10 +38,14 @@ class LogLine():
             tempval = split_line[idx].strip()
             if tempval == '' or tempval == '-' or tempval == '????':
                 tempval = None
+                if my_field in self.REQUIRED:
+                    self.badline = True
+                    print(f'Required field is missing : {my_field} : {line}')
+                    break
             setattr(self, my_field, tempval)
 
     def populate(self):
-        if self.badline == True or self.event_time == None:
+        if self.badline == True:
             return
 
         # create descriptive metadata
@@ -55,7 +61,7 @@ class LogLine():
         l_item.is_machine = self.is_machine()
         l_item.is_robot = self.is_robot()
 
-        # link-in desriptive metadata
+        # link-in descriptive metadata
         l_item.metadata_item = md_item.id
 
         # add COUNTER style user-session identification for double-click detection
