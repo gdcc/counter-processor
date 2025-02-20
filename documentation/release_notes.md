@@ -1,10 +1,5 @@
 # Release Notes
 
-## 2025-02
-- counter-processor 1.06
-- bug fixes including ignoring log lines with missing identifiers https://github.com/IQSS/dataverse/issues/11235
-- Starting with 1.05 counter-processor has moved to IQSS git repository
-
 ## 2020-11
 - Python 3.7+ is now required because some Sqlite3 library changes are only available in that version
 of python or later.  These are changes that allow backing up in-memory to on-disk databases and the reverse.
@@ -18,3 +13,4 @@ of python or later.  These are changes that allow backing up in-memory to on-dis
 - Refactoring of `config.py` to make it look more like a standard Python object, though it is a singleton.
 - Rudimentary tests added.
   -  Examples: `python3 -m unittest test/test_main.py` and `python3 -m unittest test/config/test_config.py`
+ 
