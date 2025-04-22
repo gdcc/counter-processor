@@ -12,7 +12,7 @@ mkdir log
 for i in $(seq 1 30); do
   cp test/fixtures/counter_2025-01-00.log log/counter_2025-01-$(printf "%02d" "$i").log
 done
-#cp test/fixtures/counter_2025-01-31.small.log log/counter_2025-01-31.log
+#cp test/fixtures/counter_2025-01-31.log log/counter_2025-01-31.log
 #cp test/fixtures/statefile.json state/statefile.json
 #cp test/fixtures/statefile1.json state/statefile.json
 YEAR_MONTH="2025-01" LOG_NAME_PATTERN="log/counter_(yyyy-mm-dd).log" UPLOAD_TO_HUB=True SIMULATE_DATE="2025-02-01" OUTPUT_FILE='tmp/make-data-count-report' python3.11 main.py
