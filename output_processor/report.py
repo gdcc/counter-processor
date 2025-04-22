@@ -20,6 +20,8 @@ class Report():
         self.id_count = len(self.ids_to_process)
         self.ids_processed = 0
         self.ids_to_process = [x.identifier for x in self.ids_to_process]
+        max = config.Config().max_ids_per_file()
+        self.batch_ids_to_process = [self.ids_to_process[i:i+max] for i in range(0, len(self.ids_to_process), max)]
 
     def iterate_facet_stats(self):
         for my_id in self.ids_to_process:

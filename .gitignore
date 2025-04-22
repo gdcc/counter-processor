@@ -1,5 +1,5 @@
 # Don't commit sensitive information
-secrets.yaml
+config/secrets.yaml
 
 # Compiled source #
 ###################

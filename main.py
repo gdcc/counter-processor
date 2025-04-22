@@ -29,19 +29,21 @@ def main():
     # process the log lines into a sqlite database
     print(f'{len(the_filenames)} log file(s) will be added to the database')
     print(f'Last processed date: {config.Config().last_processed_on()}')
-
+    starttime = datetime.datetime.now()
     for lf in the_filenames:
         day = config.Config().get_day_from_filename(lf)
-        with open(lf) as infile:
+        with open(lf, 'r') as infile:
             print(f'{datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}  importing {lf}')
             lc = 0
             for line in infile:
-                ll = ip.LogLine(line)
-                ll.populate()
-                lc = lc + 1
+                ip.LogLine(line).populate()
+                lc += 1
                 if lc % 100 == 0:
-                    print(f'lines imported {lc}')
-            print(f'lines imported {lc}')
+                    print(f'{datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}  lines imported {lc}')
+            print(f'{datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}  lines imported {lc}')
+        delta = datetime.datetime.now() - starttime
+        print(f'process time {delta}')
+        DbActions.vacuum() # cleanup indices, etc, maybe makes queries faster
         config.Config().update_log_processed_date(day)
         config.Config().copy_db_to_disk()
 

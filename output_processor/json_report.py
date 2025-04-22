@@ -10,21 +10,26 @@ import dateutil.parser
 import io
 import datetime
 #import ipdb; ipdb.set_trace()
+import shutil
 
 class JsonReport(Report):
     """Make a JSON report from the generic data report object this inherits from"""
 
     def output(self):
-        with io.open(f"{config.Config().output_file}.json", 'w', encoding='utf8') as jsonfile:
-            head = self.header_dict()
-            body = {'report-datasets': [self.dict_for_id(my_id) for my_id in self.ids_to_process ] }
-            data = dict(list(head.items()) + list(body.items()))
-            print('')
-            print(f'Writing JSON report to {config.Config().output_file}.json')
-            json.dump(data, jsonfile, ensure_ascii=False)
-            # the indent makes it much easier to read, but makes the file much bigger sending across the wire
-            # the indent is good for troubleshooting and reading to find problems and line numbers are useful to communicate
-            # json.dump(data, jsonfile, indent=2, ensure_ascii=False)
+        for index, item in enumerate(self.batch_ids_to_process):
+            file = f"{config.Config().output_file}.{config.Config().output_format}"
+            with io.open(file, 'w', encoding='utf8') as jsonfile:
+                head = self.header_dict()
+                body = {'report-datasets': [self.dict_for_id(my_id) for my_id in self.batch_ids_to_process[index] ] }
+                data = dict(list(head.items()) + list(body.items()))
+                print('')
+                print(f'Writing JSON report to {file}')
+                json.dump(data, jsonfile, ensure_ascii=False)
+                print(f'move {file} to {file}.{index}')
+                shutil.move(file, f'{file}.{index}')
+                # the indent makes it much easier to read, but makes the file much bigger sending across the wire
+                # the indent is good for troubleshooting and reading to find problems and line numbers are useful to communicate
+                # json.dump(data, jsonfile, indent=2, ensure_ascii=False)
 
     def header_dict(self):
         compressed_dict = {

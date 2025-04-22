@@ -77,12 +77,14 @@ class LogItem(BaseModel):
 
         # delete any duplicate requests within 30 seconds earlier by this person from the db
         # use parenthesis around your condition clauses, otherwise peewee will mess you up
-        (LogItem
-            .delete()
-            .where(
-                LogItem.event_time.between(earlier_time.isoformat(), self.event_time_as_dt().isoformat()) &
-                (LogItem.calc_doubleclick_id == self.calc_doubleclick_id ) &
-                (LogItem.request_url == self.request_url) &
-                (LogItem.id != self.id)
-            )
-            .execute())
+        LogItem2 = LogItem.alias()
+        dups = (LogItem.select(LogItem.id)
+                .join(LogItem2, on=(LogItem.calc_doubleclick_id == LogItem2.calc_doubleclick_id))
+                .where(
+                    (LogItem.event_time.between(earlier_time.isoformat(), self.event_time_as_dt().isoformat())) &
+                    (LogItem.request_url == self.request_url) &
+                    (LogItem.id != self.id)
+                ))
+
+        (LogItem.delete().where(LogItem.id.in_(dups)).execute())
+

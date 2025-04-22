@@ -8,6 +8,7 @@ import sys
 import time
 import gzip
 #import ipdb; ipdb.set_trace()
+import glob
 
 class UploadException(Exception):
     pass
@@ -46,43 +47,50 @@ def send_to_datacite():
         'Authorization': f'Bearer {config.Config().hub_api_token}'
     }
 
-    with io.open(f'{config.Config().output_file}.json', 'r', encoding='utf-8') as myfile:
-        data = myfile.read()
-
-    # post or put the information
-    #
-    # Note: the submitting report API has been expanded to return more status codes, according to https://github.com/datacite/sashimi/pull/129
-    # The new set of codes are:
-    # 200	Report has been updated
-    # 201	Report has been CREATED and validated correctly
-    # 202	Report has been ACCEPTED and its waiting for validation
-    # 404	Report does not exist
-    # 422	Report or sub-report has failed validation
-
-    # The validation here is still OK (200-299 is considered OK), retry on 500 errors, others codes log errors for examination.
-    # The new 200-level codes will mostly be useful for monitoring DataCite status or re-checking previous submissions which
-    # this class doesn't really do and would likely happen in a separate monitoring process since the other 200 codes happen
-    # asynchronously to be checked after submission time.
-
+    full_pattern = f'{config.Config().output_file}.{config.Config().output_format}.*'
+    print(f'Searching for files {full_pattern}')
+    files = glob.glob(full_pattern)
+    sorted_files = sorted(files)
     my_id = config.Config().current_id()
-    if my_id is None:
-        my_url = urljoin(config.Config().hub_base_url, 'reports')
-        # response = requests.post(my_url, data=data.encode("utf-8"), headers=headers)
-        response = retry_if_500(method='post', url=my_url, data=data, headers=headers)
-        save_response(response)
-        json_data = json.loads(response.text)
-        if 'report' in json_data:
-            my_id = json_data['report']['id']
-            config.Config().write_id(my_id)
-    else:
-        my_url = urljoin(config.Config().hub_base_url, f'reports/{pathname2url(my_id)}')
-        # response = requests.put(my_url, data=data.encode("utf-8"), headers=headers)
-        response = retry_if_500(method='put', url=my_url, data=data, headers=headers)
-        save_response(response)
 
-    if response.status_code < 200 or response.status_code > 299:
-        # raise UploadException("Expected to get 200 range status code when sending the report to the hub. Check tmp/datacite_response_body.txt for response.")
-        print("Expected to get 200 range status code when sending the report to the hub. Check tmp/datacite_response_body.txt for response.")
-        sys.exit(1)
-    else:
-        print(f'Submitted ID: {my_id}')
+    for file in sorted_files:
+        print(f'Uploading: {file}')
+        with io.open(file, 'r', encoding='utf-8') as myfile:
+            data = myfile.read()
+
+        # post or put the information
+        #
+        # Note: the submitting report API has been expanded to return more status codes, according to https://github.com/datacite/sashimi/pull/129
+        # The new set of codes are:
+        # 200	Report has been updated
+        # 201	Report has been CREATED and validated correctly
+        # 202	Report has been ACCEPTED and its waiting for validation
+        # 404	Report does not exist
+        # 422	Report or sub-report has failed validation
+
+        # The validation here is still OK (200-299 is considered OK), retry on 500 errors, others codes log errors for examination.
+        # The new 200-level codes will mostly be useful for monitoring DataCite status or re-checking previous submissions which
+        # this class doesn't really do and would likely happen in a separate monitoring process since the other 200 codes happen
+        # asynchronously to be checked after submission time.
+
+        if my_id is None:
+            my_url = urljoin(config.Config().hub_base_url, 'reports')
+            # response = requests.post(my_url, data=data.encode("utf-8"), headers=headers)
+            response = retry_if_500(method='post', url=my_url, data=data, headers=headers)
+            save_response(response)
+            json_data = json.loads(response.text)
+            if 'report' in json_data:
+                my_id = json_data['report']['id']
+                config.Config().write_id(my_id)
+        else:
+            my_url = urljoin(config.Config().hub_base_url, f'reports/{pathname2url(my_id)}')
+            # response = requests.put(my_url, data=data.encode("utf-8"), headers=headers)
+            response = retry_if_500(method='put', url=my_url, data=data, headers=headers)
+            save_response(response)
+
+        if response.status_code < 200 or response.status_code > 299:
+            # raise UploadException("Expected to get 200 range status code when sending the report to the hub. Check tmp/datacite_response_body.txt for response.")
+            print("Expected to get 200 range status code when sending the report to the hub. Check tmp/datacite_response_body.txt for response.")
+            sys.exit(1)
+        else:
+            print(f'Submitted ID: {my_id}')

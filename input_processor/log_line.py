@@ -1,14 +1,8 @@
 import config
-import main
-import exceptions
+import re
 from models import *
-from peewee import *
-import dateutil.parser
-import datetime
-import requests
 from urllib.parse import urlparse
 import geoip2.errors
-#import ipdb; ipdb.set_trace()
 
 class LogLine():
     """A class to handle log line importing from log to database"""
@@ -18,7 +12,11 @@ class LogLine():
         'filename', 'size', 'user_agent', 'title', 'publisher', 'publisher_id', 'authors', 'publication_date', 'version',
         'other_id', 'target_url', 'publication_year')
     # required columns that can NOT be empty
-    REQUIRED = ('event_time', 'identifier')
+    REQUIRED = {'event_time', 'identifier'}
+    ROBOTS_REGEX = re.compile(config.Config().robots_regexp())
+    MACHINES_REGEX = re.compile(config.Config().machines_regexp())
+
+    __slots__ = ('badline',) + COLUMNS
 
     def __init__(self, line):
         self.badline = False
@@ -26,23 +24,23 @@ class LogLine():
         if line.startswith('#'):
             self.badline = True
             return
-        split_line = line.split("\t")
 
+        split_line = line.strip().split("\t")
         if len(split_line) != len(self.COLUMNS):
             print(f'line is wrong: {line}')
             self.badline = True
             return
 
         # import the COLUMNS above
-        for idx, my_field in enumerate(self.COLUMNS):
-            tempval = split_line[idx].strip()
-            if tempval == '' or tempval == '-' or tempval == '????':
-                tempval = None
-                if my_field in self.REQUIRED:
+        for idx, field in enumerate(self.COLUMNS):
+            value = split_line[idx].strip()
+            if value in ('', '-', '????'):
+                value = None
+                if field in self.REQUIRED:
                     self.badline = True
-                    print(f'Required field is missing : {my_field} : {line}')
-                    break
-            setattr(self, my_field, tempval)
+                    print(f'Required field is missing : {field} : {line}')
+                    return
+            self.__setattr__(field, value)
 
     def populate(self):
         if self.badline == True:
@@ -56,10 +54,14 @@ class LogLine():
         for my_field in self.COLUMNS[0:10]:
             setattr(l_item, my_field, getattr(self, my_field))
 
+        l_item.is_robot = self.is_robot()
+        # no point saving this log line since we ignore "is_robot" logs in the report
+        if l_item.is_robot:
+            return
+
         l_item.country = self.lookup_geoip()
         l_item.hit_type = self.get_hit_type()
         l_item.is_machine = self.is_machine()
-        l_item.is_robot = self.is_robot()
 
         # link-in descriptive metadata
         l_item.metadata_item = md_item.id
@@ -78,42 +80,33 @@ class LogLine():
 
 
     def find_or_create_metadata(self):
-        query = (MetadataItem
-                        .select()
-                        .where(MetadataItem.identifier == self.identifier)
-                        .execute())
-        mis = list(query)
-
-        if len(mis) < 1:
-            mi = MetadataItem.create(
+        with DbActions._meta.database.atomic():
+            mi, created = MetadataItem.get_or_create(
                 identifier=self.identifier,
-                title=self.title,
-                publisher=self.publisher,
-                publisher_id=self.publisher_id,
-                publication_date=self.publication_date,
-                version=self.version,
-                other_id=self.other_id,
-                target_url=self.target_url,
-                publication_year=self.publication_year
+                defaults={
+                    'title': self.title,
+                    'publisher': self.publisher,
+                    'publisher_id': self.publisher_id,
+                    'publication_date': self.publication_date,
+                    'version': self.version,
+                    'other_id': self.other_id,
+                    'target_url': self.target_url,
+                    'publication_year': self.publication_year
+                }
             )
-            self.create_authors(md_item=mi)
-        else:
-            mi = mis[0]
+            if created:
+                self.create_authors(md_item=mi)
         return mi
 
     def create_authors(self, md_item):
-        # delete previously created authors if we're updating them
-        query = (MetadataAuthor
-                    .delete()
-                    .where(MetadataAuthor.metadata_item_id == md_item.id)
-                    .execute())
+        with DbActions._meta.database.atomic():
+            MetadataAuthor.delete().where(MetadataAuthor.metadata_item_id == md_item.id).execute()
 
-        if self.authors is None:
-            MetadataAuthor.create(metadata_item_id=md_item.id, author_name="None None")
-            return
-
-        for au in self.authors.split("|"):
-            MetadataAuthor.create(metadata_item_id=md_item.id, author_name=au)
+            if self.authors is None:
+                MetadataAuthor.create(metadata_item_id=md_item.id, author_name="None None")
+            else:
+                authors = [{'metadata_item_id': md_item.id, 'author_name': au} for au in self.authors.split("|")]
+                MetadataAuthor.insert_many(authors).execute()
 
     def lookup_geoip(self):
         """Lookup the geographical area from the IP address and return the 2 letter code"""
@@ -131,17 +124,14 @@ class LogLine():
 
     def get_hit_type(self):
         o = urlparse(self.request_url)
-        for k,v in config.Config().hit_type_regexp().items():
+        hit_types = config.Config().hit_type_regexp()
+        for k, v in hit_types.items():
             if v.search(o.path):
                 return k
         return None
 
     def is_robot(self):
-        if self.user_agent is None:
-            return False
-        return bool(config.Config().robots_regexp().search(self.user_agent))
+        return bool(self.user_agent and self.ROBOTS_REGEX.search(self.user_agent))
 
     def is_machine(self):
-        if self.user_agent is None:
-            return True
-        return bool(config.Config().machines_regexp().search(self.user_agent))
+        return not self.user_agent or bool(self.MACHINES_REGEX.search(self.user_agent))

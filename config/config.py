@@ -1,10 +1,7 @@
 import yaml
 import os
 from models import *
-from upload import upload
 import logging
-import input_processor as ip
-import output_processor as op
 import sys
 import requests
 import re
@@ -21,7 +18,8 @@ class _Config:
 
     ALLOWED_ENV = ('LOG_NAME_PATTERN', 'ROBOTS_URL', 'MACHINES_URL', 'YEAR_MONTH',
         'OUTPUT_FILE', 'PLATFORM', 'HUB_API_TOKEN', 'HUB_BASE_URL', 'UPLOAD_TO_HUB',
-        'SIMULATE_DATE', 'MAXMIND_GEOIP_COUNTRY_PATH', 'OUTPUT_VOLUME', 'CLEAN_FOR_RERUN')
+        'SIMULATE_DATE', 'MAXMIND_GEOIP_COUNTRY_PATH', 'OUTPUT_VOLUME', 'CLEAN_FOR_RERUN',
+        'PRAGMA_CACHE_SIZE', 'MAX_IDS_PER_REPORT_FILE')
 
     logging.basicConfig(format='%(message)s', level=logging.INFO)
     # thismodule = sys.modules[__name__]  # not sure this is needed
@@ -44,6 +42,7 @@ class _Config:
         self.maxmind_geoip_country_path = None
         self.output_volume = None
         self.clean_for_rerun = None
+        self.max_ids_per_report_file = None
 
         # things that are stored or calculated separately
         self.start_date = None
@@ -57,6 +56,7 @@ class _Config:
         self.processing_database = None
         self._memory_database = None
         self.last_processed_date = None
+        self.pragma_cache_size = None
 
         # --- main setup and reading of all the config information ---
         self.state_dict = _Config.read_state()
@@ -213,6 +213,9 @@ class _Config:
     def end_sql(self):
         return self.end_time().isoformat()
 
+    def max_ids_per_file(self):
+        return int(self.max_ids_per_report_file)
+
     def last_processed_on(self):
         """gives string for last day it was processed for this month"""
         if self.year_month in self.state_dict and 'last_processed_day' in self.state_dict[self.year_month]:
@@ -295,6 +298,14 @@ class _Config:
             disk_db.close()
         else:
             self._memory_database = connect('file::memory:?cache=shared', uri=True)
+
+        if self.pragma_cache_size is not None:
+            cursor = self._memory_database.cursor()
+            cursor.execute(f'PRAGMA cache_size = {self.pragma_cache_size};')
+            cursor.execute("PRAGMA cache_size;")
+            cache_size = cursor.fetchone()[0]
+            # Print the cache size
+            print(f"PRAGMA CACHE_SIZE: {cache_size}")
 
     def copy_db_to_disk(self):
         # Backup a memory database to a file

@@ -44,6 +44,7 @@ year_month: 2018-04
 
 # Don't put the filename extension, the code will tack on the tsv or json extension for you.
 output_file: tmp/test_out
+output_format: json
 
 # Allows the report to have volume (size) info, which DataCite doesn't accept yet
 output_volume: False
@@ -65,3 +66,10 @@ upload_to_hub: False
 # simulate_date: 2018-04-02
 
 maxmind_geoip_country_path: maxmind_geoip/GeoLite2-Country.mmdb
+
+# Sqlite Database default CACHE_SIZE is 2000 pages (approximately 2MB)
+# -64000 denotes 64MB (negative numbers for MB, positive numbers for pages)
+pragma_cache_size: -64000
+
+# Datacite has a max dataset ids of 50,000 per file upload
+max_ids_per_report_file: 40000
