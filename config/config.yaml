@@ -71,4 +71,4 @@ maxmind_geoip_country_path: maxmind_geoip/GeoLite2-Country.mmdb
 pragma_cache_size: -64000
 
 # Datacite has a max dataset ids of 50,000 per file upload
-max_ids_per_report_file: 20
+max_ids_per_report_file: 20000
