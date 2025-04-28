@@ -39,7 +39,6 @@ machines_url: https://raw.githubusercontent.com/IQSS/counter-processor/refs/head
 # the year and month for the report you are creating.
 year_month: 2018-04
 
-
 # Output formats are only json currently. tsv was planned but spec was never finalized.
 
 # Don't put the filename extension, the code will tack on the tsv or json extension for you.
@@ -50,7 +49,7 @@ output_format: json
 output_volume: False
 
 # the name of the platform that goes into your reports
-platform: Dryad
+platform: Harvard Dataverse
 
 # Don't put your api token in here if you're going to commit it, but put in separate secrets.yaml in same
 # directory as the config or else set a environment variable when starting up in order to override the key.
@@ -72,4 +71,4 @@ maxmind_geoip_country_path: maxmind_geoip/GeoLite2-Country.mmdb
 pragma_cache_size: -64000
 
 # Datacite has a max dataset ids of 50,000 per file upload
-max_ids_per_report_file: 40000
+max_ids_per_report_file: 20

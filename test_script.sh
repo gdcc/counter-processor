@@ -15,7 +15,7 @@ done
 cp test/fixtures/counter_2025-01-31.log log/counter_2025-01-31.log
 #cp test/fixtures/statefile.json state/statefile.json
 #cp test/fixtures/statefile1.json state/statefile.json
-YEAR_MONTH="2025-01" LOG_NAME_PATTERN="log/counter_(yyyy-mm-dd).log" UPLOAD_TO_HUB=True SIMULATE_DATE="2025-02-01" OUTPUT_FILE='tmp/make-data-count-report' python3.11 main.py
+YEAR_MONTH="2025-01" LOG_NAME_PATTERN="log/counter_(yyyy-mm-dd).log" UPLOAD_TO_HUB=False SIMULATE_DATE="2025-02-01" OUTPUT_FILE='tmp/make-data-count-report' python3.11 main.py
 echo "Done"
 ENDTIME=$(date +%s)
 echo "It took $(($ENDTIME - $STARTTIME)) seconds to complete..."

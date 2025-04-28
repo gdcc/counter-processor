@@ -11,26 +11,39 @@ import io
 import datetime
 #import ipdb; ipdb.set_trace()
 import shutil
+import glob
+import os
 
 class JsonReport(Report):
     """Make a JSON report from the generic data report object this inherits from"""
 
     def output(self):
-        for index, item in enumerate(self.batch_ids_to_process):
-            file = f"{config.Config().output_file}.{config.Config().output_format}"
-            with io.open(file, 'w', encoding='utf8') as jsonfile:
-                head = self.header_dict()
-                body = {'report-datasets': [self.dict_for_id(my_id) for my_id in self.batch_ids_to_process[index] ] }
-                data = dict(list(head.items()) + list(body.items()))
-                print('')
-                print(f'Writing JSON report to {file}')
-                json.dump(data, jsonfile, ensure_ascii=False)
-                print(f'move {file} to {file}.{index}')
-                shutil.move(file, f'{file}.{index}')
-                # the indent makes it much easier to read, but makes the file much bigger sending across the wire
-                # the indent is good for troubleshooting and reading to find problems and line numbers are useful to communicate
-                # json.dump(data, jsonfile, indent=2, ensure_ascii=False)
+        file = f"{config.Config().output_file}.{config.Config().output_format}"
+        start_at = config.Config().get_batch_index()
+        print(f'Starting at index {start_at}')
+        # clean up existing batch files if starting new report
+        if start_at < 0:
+            self.delete_reports()
 
+        for index, item in enumerate(self.batch_ids_to_process):
+            # skip over batches that were already written before the last error
+            if index > start_at:
+                with io.open(file, 'w', encoding='utf8') as jsonfile:
+                    head = self.header_dict()
+                    body = {'report-datasets': [self.dict_for_id(my_id) for my_id in self.batch_ids_to_process[index] ] }
+                    data = dict(list(head.items()) + list(body.items()))
+                    print('')
+                    print(f'Writing JSON report to {file}')
+                    json.dump(data, jsonfile, ensure_ascii=False)
+                    # rollover the file
+                    print(f'move {file} to {file}.{index}')
+                    shutil.move(file, f'{file}.{index}')
+                    config.Config().write_batch_index(index)
+                    # the indent makes it much easier to read, but makes the file much bigger sending across the wire
+                    # the indent is good for troubleshooting and reading to find problems and line numbers are useful to communicate
+                    # json.dump(data, jsonfile, indent=2, ensure_ascii=False)
+            else:
+                print(f'Skipping index {index}')
     def header_dict(self):
         compressed_dict = {
             'code':         69,
@@ -78,3 +91,9 @@ class JsonReport(Report):
         meta = self.find_metadata_by_identifier(id_stat.identifier)
         js_meta = JsonMetadata(id_stat, meta)
         return js_meta.descriptive_dict()
+
+    def delete_reports(self):
+        file = f"{config.Config().output_file}.{config.Config().output_format}"
+        # cleanup old batch files
+        for f in glob.glob(f'{file}.*'):
+            os.remove(f)

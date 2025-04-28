@@ -23,7 +23,6 @@ def main():
 
     the_filenames = config.Config().filenames_to_process()
 
-
     print(f'Running report for {config.Config().start_time().isoformat()} to {config.Config().end_time().isoformat()}')
 
     # process the log lines into a sqlite database
@@ -45,6 +44,8 @@ def main():
         print(f'process time {delta}')
         DbActions.vacuum() # cleanup indices, etc, maybe makes queries faster
         config.Config().update_log_processed_date(day)
+        # only deleting reports if processing new log files, so we can re-run the upload without re-creating the reports
+        config.Config().write_batch_index(-1)
         config.Config().copy_db_to_disk()
 
     print('')
