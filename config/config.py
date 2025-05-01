@@ -299,6 +299,19 @@ class _Config:
         else:
             return -1
 
+    def write_upload_batch_index(self, index):
+        # write the index of last batch file that was successfully uploaded (for restart after error)
+        self.state_dict[self.year_month]['upload_batch_index'] = index
+        with open('state/statefile.json', 'w') as f:
+            json.dump(self.state_dict, f, sort_keys = True, indent = 4, ensure_ascii=False)
+
+    def get_upload_batch_index(self):
+        # get the index of the last successfully uploaded report
+        if 'upload_batch_index' in self.state_dict[self.year_month]:
+            return self.state_dict[self.year_month]['upload_batch_index']
+        else:
+            return -1
+
     def copy_db_to_memory(self):
         # I couldn't find a way for Peewee to initialize with a sqlite3 connection rather than a string, but this url
         # shows how to share a database when using a string if it is in the same process

@@ -9,6 +9,7 @@ import time
 import gzip
 #import ipdb; ipdb.set_trace()
 import glob
+import os
 
 class UploadException(Exception):
     pass
@@ -52,8 +53,14 @@ def send_to_datacite():
     files = glob.glob(full_pattern)
     sorted_files = sorted(files)
     my_id = config.Config().current_id()
+    start_at = config.Config().get_upload_batch_index()
 
     for file in sorted_files:
+        filename, file_extension = os.path.splitext(file)
+        index = int(file_extension.strip("."))
+        if index < start_at:
+            print(f'Skipping index {file_extension}')
+            continue
         print(f'Uploading: {file}')
         with io.open(file, 'r', encoding='utf-8') as myfile:
             data = myfile.read()
@@ -94,3 +101,4 @@ def send_to_datacite():
             sys.exit(1)
         else:
             print(f'Submitted ID: {my_id}')
+            config.Config().write_upload_batch_index(index)
