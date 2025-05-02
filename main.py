@@ -57,6 +57,10 @@ def main():
     if config.Config().upload_to_hub == True:
         upload.send_to_datacite()
 
+    # Clean up - delete db only after the reports are generated and uploaded successfully
+    if os.path.isfile(config.Config().processing_database):
+        os.remove(config.Config().processing_database)
+
     if 'test_mode' not in globals():
         sys.exit(0) # this is causing the tests to fail
 
