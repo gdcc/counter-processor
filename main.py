@@ -43,10 +43,10 @@ def main():
         delta = datetime.datetime.now() - starttime
         print(f'process time {delta}')
         DbActions.vacuum() # cleanup indices, etc, maybe makes queries faster
+        config.Config().copy_db_to_disk()
         config.Config().update_log_processed_date(day)
         # only deleting reports if processing new log files, so we can re-run the upload without re-creating the reports
         config.Config().write_batch_index(-1)
-        config.Config().copy_db_to_disk()
 
     print('')
     DbActions.vacuum() # cleanup indices, etc, maybe makes queries faster
