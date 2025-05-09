@@ -57,8 +57,10 @@ def main():
     if config.Config().upload_to_hub == True:
         upload.send_to_datacite()
 
-    # Clean up - delete db only after the reports are generated and uploaded successfully
-    if os.path.isfile(config.Config().processing_database):
+    # Clean up - delete db only after all the month's reports are generated and uploaded successfully
+    print(f'Month Complete {config.Config().month_complete()}')
+    if os.path.isfile(config.Config().processing_database) and config.Config().month_complete():
+        print(f'Deleting Database {config.Config().processing_database}')
         os.remove(config.Config().processing_database)
 
     if 'test_mode' not in globals():

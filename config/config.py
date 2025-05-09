@@ -168,7 +168,7 @@ class _Config:
         return self.last_p_day
 
     def month_complete(self):
-        return (self.run_date > self.end_time())
+        return (self.run_date >= self.end_time())
 
     # gets/memorizes the robots regexp
     def robots_regexp(self):
