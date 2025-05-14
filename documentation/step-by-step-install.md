@@ -3,7 +3,7 @@
 ## Get the code
 
 <pre>
-git clone https://github.com/IQSS/counter-processor.git
+git clone https://github.com/gdcc/counter-processor.git
 cd counter-processor
 git checkout <em>branch-or-tag</em>
 </pre>

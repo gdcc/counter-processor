@@ -33,8 +33,8 @@ path_types:
 # if something is a robot or machine user-agent.  The text file has one regular expression per line
 #robots_url: https://raw.githubusercontent.com/CDLUC3/Make-Data-Count/master/user-agents/lists/robot.txt
 #machines_url: https://raw.githubusercontent.com/CDLUC3/Make-Data-Count/master/user-agents/lists/machine.txt
-robots_url: https://raw.githubusercontent.com/IQSS/counter-processor/refs/heads/goto-gdcc/user-agents/lists/robots.txt
-machines_url: https://raw.githubusercontent.com/IQSS/counter-processor/refs/heads/goto-gdcc/user-agents/lists/machine.txt
+robots_url: https://raw.githubusercontent.com/IQSS/counter-processor/refs/heads/main/user-agents/lists/robots.txt
+machines_url: https://raw.githubusercontent.com/IQSS/counter-processor/refs/heads/main/user-agents/lists/machine.txt
 
 # the year and month for the report you are creating.
 year_month: 2018-04
@@ -42,14 +42,14 @@ year_month: 2018-04
 # Output formats are only json currently. tsv was planned but spec was never finalized.
 
 # Don't put the filename extension, the code will tack on the tsv or json extension for you.
-output_file: tmp/test_out
+output_file: tmp/make-data-count-report
 output_format: json
 
 # Allows the report to have volume (size) info, which DataCite doesn't accept yet
 output_volume: False
 
 # the name of the platform that goes into your reports
-platform: Harvard Dataverse
+platform: Dataverse
 
 # Don't put your api token in here if you're going to commit it, but put in separate secrets.yaml in same
 # directory as the config or else set a environment variable when starting up in order to override the key.
