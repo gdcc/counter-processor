@@ -60,21 +60,8 @@ with some examples.
 ## Make logs available  
 You will need to run the script on a computer where the log files you're trying to process are available on the file system for the script to access.
 
-## Download the free IP to geolocation database
-The geo-ip uses GeoLite2 data created by MaxMind and is available from
-<a href="https://web.archive.org/web/20191222130401/https://dev.maxmind.com/geoip/geoip2/geolite2/" target="_blank">
-Internet Archive</a>
-(you only need the country database in binary database format).
-
-GeoLite2 is a free IP geolocation database that must be installed. You can download the
-database above. Choose the GeoLite2 Country database (binary, gzipped) and extract it to
-the maxmind_geoip directory inside the application to use with default configuration,
-or put it elsewhere and configure the path as mentioned below.
-
-Newer versions of the database cannot be used with the current version of the script since
-additional licensing terms are required such as registering for accounts, having an auto-update
-functionality and ensuring it runs regularly. The script has not been updated to take these
-additional requirements into account.
+## Download the free IP to geolocation database (Optional)
+The geo-ip uses GeoLite2 data created by MaxMind to assign views and downloads to specific countries. It can be installed <a href="https://guides.dataverse.org/en/6.6/installation/prerequisites.html#installing-geolite-country-database" target="_blank">as discussed in the Dataverse Guides</a>
 
 ## Set up the configuration file
 The script takes a number of different configuration parameters in order to run correctly.  See **config/config.yaml** for an example.  To change the configuration you may edit it at config/config.yaml or you can put it at a different location and then specify it with an environment variable when starting the script like the example below.

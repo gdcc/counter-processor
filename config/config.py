@@ -156,7 +156,7 @@ class _Config:
     def end_time(self):
         return datetime.datetime.combine(self.end_date, datetime.datetime.min.time()) + datetime.timedelta(days=1)
 
-    # memorization of last day
+    # memoization of last day
     def last_day(self):
         """The last day available in the period, either yesterday if in same month, or else last day of month if it has passed"""
         if self.last_p_day is not None:
@@ -170,7 +170,7 @@ class _Config:
     def month_complete(self):
         return (self.run_date >= self.end_time())
 
-    # gets/memorizes the robots regexp
+    # gets/memoizes the robots regexp
     def robots_regexp(self):
         """Get the list of robots/crawlers from a list that is one per line
         from the URL and make a regular expression for the detection"""
@@ -184,7 +184,7 @@ class _Config:
         self.robots_reg = re.compile('|'.join(lines))
         return self.robots_reg
 
-    # gets/memorizes the machines regexp
+    # gets/memoizes the machines regexp
     def machines_regexp(self):
         """Get the list of machines from a list that is one per line
         from the URL and make a regular expression for the detection"""
@@ -198,7 +198,7 @@ class _Config:
         self.machines_reg = re.compile('|'.join(lines))
         return self.machines_reg
 
-    # gets/memorizes the hit-type regexp
+    # gets/memoizes the hit-type regexp
     def hit_type_regexp(self):
         """Make hit type regular expressions for investigation vs request"""
         if self.hit_type_reg is not None:
