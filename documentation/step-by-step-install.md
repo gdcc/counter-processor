@@ -5,13 +5,11 @@
 <pre>
 git clone https://github.com/IQSS/counter-processor.git
 cd counter-processor
-git checkout <em>branch-or-tag</em>
 </pre>
 
 ## Set an environment for python besides your system environment
 
-You may need to install python 3.7 or later on your system if it is not there already.
-3.7+ is required because of some sqlite3 options not available in earlier versions.  This
+Python 3.10 or later is required for this script due to updates in dependencies and other libraries that are incompatible with earlier Python versions. This
 may be set as the command `python` or `python3` on your system.
 
 This may be through your package manager (apt, yum, homebrew, etc) or manually.
